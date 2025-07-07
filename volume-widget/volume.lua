@@ -17,12 +17,11 @@ local utils = require("awesome-wm-widgets.volume-widget.utils")
 
 local LIST_DEVICES_CMD = [[sh -c "pacmd list-sinks; pacmd list-sources"]]
 local function GET_VOLUME_CMD(card, device, mixctrl, value_type)
-	return "amixer -c " .. card .. " -D " .. device .. " sget " .. mixctrl .. " " .. value_type
+	return "amixer" .. card .. device .. " sget " .. mixctrl .. " " .. value_type
 end
 local function INC_VOLUME_CMD(card, device, mixctrl, value_type, step)
-	return "amixer -c "
+	return "amixer"
 		.. card
-		.. " -D "
 		.. device
 		.. " sset "
 		.. mixctrl
@@ -33,9 +32,8 @@ local function INC_VOLUME_CMD(card, device, mixctrl, value_type, step)
 		.. "%+"
 end -- luacheck: ignore
 local function DEC_VOLUME_CMD(card, device, mixctrl, value_type, step)
-	return "amixer -c "
+	return "amixer"
 		.. card
-		.. " -D "
 		.. device
 		.. " sset "
 		.. mixctrl
@@ -46,7 +44,7 @@ local function DEC_VOLUME_CMD(card, device, mixctrl, value_type, step)
 		.. "%-"
 end -- luacheck: ignore
 local function TOG_VOLUME_CMD(card, device, mixctrl)
-	return "amixer -c " .. card .. " -D " .. device .. " sset " .. mixctrl .. " toggle"
+	return "amixer" .. card .. device .. " sset " .. mixctrl .. " toggle"
 end -- luacheck: ignore
 
 local widget_types = {
@@ -216,12 +214,20 @@ end
 local function worker(user_args)
 	local args = user_args or {}
 
+  local function arg_or_empty(option, argument)
+    if argument then
+      return option .. argument
+    else
+      return ""
+    end
+  end
+
 	local mixer_cmd = args.mixer_cmd or "pavucontrol"
 	local widget_type = args.widget_type
 	local refresh_rate = args.refresh_rate or 1
 	local step = args.step or 5
-	local card = args.card or 0
-	local device = args.device or "pulse"
+  local card = arg_or_empty(" -c ", args.card)
+	local device = arg_or_empty(" -D ", args.device)
 	local mixctrl = args.mixctrl or "Master"
 	local value_type = args.value_type or "-M"
 	local toggle_cmd = args.toggle_cmd or nil
